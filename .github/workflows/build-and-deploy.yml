@@ -1,0 +1,40 @@
+name: Build and Deploy Irys Funding App
+
+on:
+  push:
+    branches:
+      - main  # Trigger the workflow on pushes to the main branch
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest  # Use a Linux runner
+
+    steps:
+      # https://github.com/actions/setup-node
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20.9.0
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: List files in directory
+        run: ls -la
+
+      - name: Build app
+        run: npm run build
+
+        # https://github.com/SamKirkland/FTP-Deploy-Action
+      - name: Deploy to FTP
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: ${{ secrets.FTP_SERVER }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          local-dir: build/  # The directory containing your built React app
+          server-dir: /www/1234.ch/irys-funding/  # Adjust to your desired remote directory
+          dangerous-clean-slate: true  # Optionally clean the remote directory before deployment
