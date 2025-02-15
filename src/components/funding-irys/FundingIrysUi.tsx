@@ -5,10 +5,8 @@ import { Box, Paper } from '@mui/material';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 import { StatusMessageElement } from '../common/StatusMessageElement';
-import { IrysFundingUi } from '../irys-components/IrysFundingUi';
-import { IrysFileUpload } from './IrysFileUpload';
+import { IrysFundingUi } from './IrysFundingUi';
 import { IrysAccess } from '../../utils/IrysAccess';
-import { DecryptFileUi } from './DecryptFileUi';
 import { useAppContext } from '../AppContextProvider';
 import { CollapsiblePanel } from '../common/CollapsiblePanel';
 import { Web3NotInitialized } from '../common/Web3NotInitialized';
@@ -58,15 +56,9 @@ export function FundingIrysUi() {
         <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
           <Tabs value={value} onChange={handleChange}>
             <Tab label="Irys Funding" />
-            <Tab label="Irys File Upload" />
-            <Tab label="Decryption" />
           </Tabs>
         </Box>
-        <Paper sx={{ margin: '1em 0 1em 0' }}>
-          {value === 0 && <IrysFundingUi irysAccess={irysAccess} />}
-          {value === 1 && <IrysFileUpload irysAccess={irysAccess} />}
-          {value === 2 && <DecryptFileUi />}
-        </Paper>
+        <Paper sx={{ margin: '1em 0 1em 0' }}>{value === 0 && <IrysFundingUi irysAccess={irysAccess} />}</Paper>
       </Box>
     );
   }

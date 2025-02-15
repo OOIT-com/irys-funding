@@ -1,49 +1,47 @@
-import { Box, CircularProgress, Stack } from '@mui/material';
-import React from 'react';
+import { Backdrop, Box, CircularProgress, Stack, Theme } from '@mui/material';
+import React, { useEffect, useState } from 'react';
 import { useAppContext } from '../AppContextProvider';
+import { withStyles } from 'tss-react/mui';
+import { DivBox } from './DivBox';
+
+export const LBox = withStyles(Stack, (theme) => ({
+  root: {
+    background: theme.palette.mode === 'dark' ? 'black' : 'white',
+    color: theme.palette.mode === 'dark' ? 'white' : 'black',
+    padding: '4em',
+    borderRadius: '0.4em',
+    justifyContent: 'center',
+    alignItems: 'center'
+  }
+}));
 
 export default function Loader() {
   const { loading } = useAppContext();
+  const [start, setStart] = useState(false);
+  const handleClose = () => {};
+
+  useEffect(() => {
+    setStart(false);
+    const id = window.setTimeout(() => setStart(true), 300);
+    return () => clearTimeout(id);
+  }, [loading]);
 
   if (loading) {
     return (
-      <>
-        <Box
-          sx={{
-            position: 'fixed',
-            opacity: '0.5',
-            top: '0',
-            right: '0',
-            bottom: '0',
-            left: '0',
-            background: 'gray',
-            zIndex: '10000'
-          }}
-        />
-        <Box
-          sx={{
-            position: 'fixed',
-            top: '50%',
-            right: '50%',
-            bottom: '50%',
-            left: '50%',
-            zIndex: '10001'
-          }}
-        >
-          <Stack
-            direction={'row'}
-            spacing={2}
-            justifyContent={'center'}
-            alignItems={'center'}
-            sx={{ border: 'res solid 1px' }}
-          >
-            <div>
+      <Backdrop
+        sx={(theme) => ({ background: '#11111199', color: '#fff', zIndex: theme.zIndex.drawer + 1 })}
+        open={true}
+        onClick={handleClose}
+      >
+        {start && (
+          <DivBox sx={(theme: Theme) => ({ background: 'black', padding: '2em', borderRadius: '0.4em' })}>
+            <Stack spacing={2} direction={'row'}>
               <CircularProgress color={'primary'} />
-            </div>
-            <div style={{ whiteSpace: 'nowrap', fontSize: '120%' }}>{loading}</div>
-          </Stack>
-        </Box>
-      </>
+              <Box sx={{ whiteSpace: 'nowrap', fontSize: '120%' }}>{loading}</Box>
+            </Stack>
+          </DivBox>
+        )}
+      </Backdrop>
     );
   }
   return <></>;

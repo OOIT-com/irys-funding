@@ -6,7 +6,7 @@ export const AppIcon: FC<{ src: any; alt: string }> = ({ src, alt }) => {
       style={{
         display: 'block',
         padding: '1em',
-        background: 'none' //'#f8ffff55'
+        background: 'none'
       }}
     >
       <img src={src} alt={alt} style={{ maxHeight: '5em', maxWidth: '5em' }} />

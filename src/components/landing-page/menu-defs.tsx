@@ -1,7 +1,7 @@
 import { JSX, ReactNode } from 'react';
 import { FundingIrysUi } from '../funding-irys/FundingIrysUi';
 
-import artworkPng from '../images/funding-irys.png';
+import fundingIrysPng from '../images/funding-irys.png';
 import { AppIcon } from '../common/AppIcon';
 
 export type MenuEntry = {
@@ -21,7 +21,7 @@ const menuColumnsAll: MenuColumn[] = [
       {
         path: 'funding-irys',
         name: 'Funding Irys',
-        icon: <AppIcon src={artworkPng} alt={'Funding Irys'} />,
+        icon: <AppIcon src={fundingIrysPng} alt={'Funding Irys'} />,
         description: 'Funding Irys with MetaMask',
         element: <FundingIrysUi />
       }

@@ -7,7 +7,7 @@ import { useEffect } from 'react';
 import { menuColumns, MenuEntry } from './landing-page/menu-defs';
 import { useAppContext } from './AppContextProvider';
 import { ErrorPage } from './login/ErrorPage';
-import Loader2 from './common/Loader2';
+import Loader from './common/Loader';
 
 const menuEntries: MenuEntry[] = menuColumns.reduce<MenuEntry[]>((acc, col) => [...acc, ...col.entries], []);
 
@@ -77,7 +77,7 @@ function AppNavigation() {
         <Stack spacing={2} mt={'1em'} mb={'1em'}>
           <Outlet />
         </Stack>
-        <Loader2 />
+        <Loader />
       </Container>
     </Box>
   );
