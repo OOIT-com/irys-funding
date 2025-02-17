@@ -94,7 +94,8 @@
     "url": "^0.11.4",
     "assert": "^2.1.0",
     "buffer": "^6.0.3",
-    "node-polyfill-webpack-plugin": "^4.0.0"
+    "node-polyfill-webpack-plugin": "^4.0.0",
+    "elliptic": ">=6.6.1"
   },
   "scripts": {
     "start": "react-app-rewired start",
