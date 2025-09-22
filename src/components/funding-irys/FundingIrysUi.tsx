@@ -2,8 +2,6 @@ import * as React from 'react';
 import { ReactNode, useCallback, useEffect, useState } from 'react';
 import { infoMessage, isStatusMessage, StatusMessage } from '../../types';
 import { Box, Paper } from '@mui/material';
-import Tabs from '@mui/material/Tabs';
-import Tab from '@mui/material/Tab';
 import { StatusMessageElement } from '../common/StatusMessageElement';
 import { IrysFundingUi } from './IrysFundingUi';
 import { IrysAccess } from '../../utils/IrysAccess';
@@ -53,12 +51,9 @@ export function FundingIrysUi() {
   if (irysAccess) {
     content.push(
       <Box key={'irys-content'} sx={{ width: '100%' }}>
-        <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
-          <Tabs value={value} onChange={handleChange}>
-            <Tab label="Irys Funding" />
-          </Tabs>
-        </Box>
-        <Paper sx={{ margin: '1em 0 1em 0' }}>{value === 0 && <IrysFundingUi irysAccess={irysAccess} />}</Paper>
+        <Paper sx={{ margin: '1em 0 1em 0' }}>
+          <IrysFundingUi irysAccess={irysAccess} />
+        </Paper>
       </Box>
     );
   }
