@@ -126,7 +126,7 @@ export const getUsdPriceCoinApi = async (symbol: string): Promise<UsdPrice | Sta
 //   symbol?: string;
 // }): Promise<string> => {
 //   if (web3Session && !symbol) {
-//     const ni = getNetworkInfo(web3Session.networkId);
+//     const ni = getNetworkInfo(web3Session.chainId);
 //     symbol = ni.currencySymbol;
 //   }
 //   if (!symbol) {

@@ -32,7 +32,7 @@ export const ConnectWithMetamaskButton: React.FC = () => {
       return;
     }
     let web3: Web3 | undefined = undefined;
-    let networkId = 0;
+    let chainId = 0;
     let publicAddress: string | undefined = undefined;
     let publicKeyHolder: PublicKeyHolder | undefined = undefined;
     try {
@@ -56,9 +56,9 @@ export const ConnectWithMetamaskButton: React.FC = () => {
       console.log(webInitialized);
       dispatchSnackbarMessage(infoMessage(webInitialized));
 
-      networkId = await getChainId(web3);
+      chainId = await getChainId(web3);
 
-      console.log('App detected chainId:', networkId);
+      console.log('App detected chainId:', chainId);
       console.log('MetaMask chainId:', await w.ethereum.request({ method: 'eth_chainId' }));
 
       publicAddress = await getCurrentAddress(web3);
@@ -92,7 +92,7 @@ export const ConnectWithMetamaskButton: React.FC = () => {
       console.error(metamaskError);
       dispatchSnackbarMessage(errorMessage(metamaskError, error));
     } finally {
-      if (!web3 || !publicAddress || !networkId) {
+      if (!web3 || !publicAddress || !chainId) {
         const couldNotCreateWeb3Session = 'Could not create Web3 Session!';
         console.error(couldNotCreateWeb3Session);
         dispatchSnackbarMessage(errorMessage(couldNotCreateWeb3Session));
@@ -101,7 +101,7 @@ export const ConnectWithMetamaskButton: React.FC = () => {
           web3,
           publicAddress,
           publicKeyHolder,
-          networkId,
+          chainId,
           mode: 'metamask'
         };
 

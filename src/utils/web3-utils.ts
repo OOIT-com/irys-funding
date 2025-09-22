@@ -13,20 +13,20 @@ export async function getCurrentAddress(web3: Web3) {
 }
 
 export async function getChainId(web3: Web3): Promise<number> {
-  const chainId = await web3.eth.getChainId();
-  console.debug('chainId from web3:', chainId);
+  const chainId0 = await web3.eth.getChainId();
+  console.debug('chainId from web3:', chainId0);
 
   // Ensure we return a proper number
-  const networkId = typeof chainId === 'string' ? parseInt(chainId, 16) : Number(chainId);
-  console.debug('converted networkId:', networkId);
+  const chainId = typeof chainId0 === 'string' ? parseInt(chainId0, 16) : Number(chainId0);
+  console.debug('converted chainId:', chainId);
 
   const w = window as any;
   const metamaskChainId = await w.ethereum.request({ method: 'eth_chainId' });
   const metamaskNetworkId = parseInt(metamaskChainId, 16);
 
-  console.log('App detected networkId:', networkId);
+  console.log('App detected chainId:', chainId);
   console.log('MetaMask chainId (hex):', metamaskChainId);
-  console.log('MetaMask networkId (decimal):', metamaskNetworkId);
+  console.log('MetaMask chainId (decimal):', metamaskNetworkId);
 
   return +(chainId || '-1').toString();
 }

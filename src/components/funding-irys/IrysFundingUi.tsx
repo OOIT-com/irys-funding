@@ -35,8 +35,8 @@ export function IrysFundingUi({ irysAccess }: Readonly<{ irysAccess: IrysAccess 
     });
   }, [wrap, irysAccess]);
 
-  const symbol = getNetworkInfo(web3Session?.networkId).currencySymbol;
-  const blockchain = getNetworkInfo(web3Session?.networkId).name;
+  const symbol = getNetworkInfo(web3Session?.chainId).currencySymbol;
+  const blockchain = getNetworkInfo(web3Session?.chainId).name;
   const usdPrice = useUsdPrice(symbol);
 
   useEffect(() => {

@@ -71,9 +71,9 @@ export class IrysAccess {
 }
 
 const getWebIrys = async (web3Session: Web3Session): Promise<UploadBuilder | StatusMessage> => {
-  const { networkId } = web3Session;
+  const { chainId } = web3Session;
 
-  const { currencySymbol, isMainnet } = getNetworkInfo(networkId);
+  const { currencySymbol, isMainnet, name } = getNetworkInfo(chainId);
   const provider = new ethers.BrowserProvider(w.ethereum);
   let uploader;
   switch (currencySymbol) {
@@ -87,7 +87,10 @@ const getWebIrys = async (web3Session: Web3Session): Promise<UploadBuilder | Sta
       uploader = WebUploader(WebAvalanche).withAdapter(EthersV6Adapter(provider));
       break;
     default:
-      return errorMessage(`Blockchain with token ${currencySymbol} not supported`);
+      return errorMessage(
+        `Blockchain <${name}> with token ${currencySymbol} not supported`,
+        `Currently only the following tokens are supported: ${Array.from(supportedSymbols).join(', ')}`
+      );
   }
   const rpcUrl: string | undefined = process.env.REACT_APP_IRYS_RPC_URL_DEV ?? '';
   if (!isMainnet && rpcUrl) {
@@ -95,3 +98,5 @@ const getWebIrys = async (web3Session: Web3Session): Promise<UploadBuilder | Sta
   }
   return uploader;
 };
+
+export const supportedSymbols = new Set<string>(['ETH', 'AVAX', 'MATIC']);
