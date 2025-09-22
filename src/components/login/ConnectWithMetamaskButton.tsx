@@ -5,7 +5,7 @@ import { errorMessage, infoMessage, PublicKeyHolder, Web3Session } from '../../t
 import { useNavigate } from 'react-router-dom';
 
 import { displayAddress } from '../../utils/misc-util';
-import { getCurrentAddress, getCurrentNetworkId } from '../../utils/web3-utils';
+import { getCurrentAddress, getChainId } from '../../utils/web3-utils';
 import { useAppContext } from '../AppContextProvider';
 import { StatusMessageElement } from '../common/StatusMessageElement';
 import LinkIcon from '@mui/icons-material/Link';
@@ -26,7 +26,9 @@ export const ConnectWithMetamaskButton: React.FC = () => {
       return;
     }
     if (web3Session) {
-      dispatchSnackbarMessage(infoMessage('Already connected!'));
+      const alreadyConnected = 'Already connected!';
+      console.error(alreadyConnected);
+      dispatchSnackbarMessage(infoMessage(alreadyConnected));
       return;
     }
     let web3: Web3 | undefined = undefined;
@@ -35,51 +37,65 @@ export const ConnectWithMetamaskButton: React.FC = () => {
     let publicKeyHolder: PublicKeyHolder | undefined = undefined;
     try {
       if (!w.ethereum) {
-        dispatchSnackbarMessage(
-          errorMessage('Can not connect to Metamask Wallet!', 'window.ethereum id not initialized!')
-        );
+        const cannotConnect = 'Cannot connect to Metamask Wallet!';
+        console.error(cannotConnect);
+        dispatchSnackbarMessage(errorMessage(cannotConnect, 'window.ethereum id not initialized!'));
         return;
       }
 
       await w.ethereum.enable();
 
-      dispatchSnackbarMessage(infoMessage('Ethereum is enabled!'));
+      const ethereumEnabled = 'Ethereum is enabled!';
+      console.log(ethereumEnabled);
+      dispatchSnackbarMessage(infoMessage(ethereumEnabled));
 
       // We don't know window.web3 version, so we use our own instance of Web3
       // with the injected provider given by MetaMask
       web3 = new Web3(w.ethereum);
-      dispatchSnackbarMessage(infoMessage('Web3 initialized!'));
+      const webInitialized = 'Web3 initialized!';
+      console.log(webInitialized);
+      dispatchSnackbarMessage(infoMessage(webInitialized));
 
-      w?.ethereum?.on('accountsChanged', () =>
-        // e: never
-        {
-          w?.location?.reload();
-        }
-      );
+      networkId = await getChainId(web3);
 
-      w?.ethereum?.on('networkChanged', () => {
-        w?.location?.reload();
-      });
-
-      networkId = await getCurrentNetworkId(web3);
-
-      console.log('App detected networkId:', networkId);
+      console.log('App detected chainId:', networkId);
       console.log('MetaMask chainId:', await w.ethereum.request({ method: 'eth_chainId' }));
 
       publicAddress = await getCurrentAddress(web3);
 
-      // PUBLIC ADDRESS & PUBLIC KEY
       if (!publicAddress) {
-        dispatchSnackbarMessage(errorMessage('Please open MetaMask first.', 'Web3 could not detect a public address!'));
+        const openMetamaskFirst = 'Please open MetaMask first.';
+        console.error(openMetamaskFirst);
+        dispatchSnackbarMessage(errorMessage(openMetamaskFirst, 'Web3 could not detect a public address!'));
         return;
       } else {
-        dispatchSnackbarMessage(infoMessage(`Address ${displayAddress(publicAddress)} connected`));
+        const successfullyConnected = `Address ${displayAddress(publicAddress)} connected`;
+        console.log(successfullyConnected);
+        dispatchSnackbarMessage(infoMessage(successfullyConnected));
       }
+
+      w?.ethereum?.on('accountsChanged', () =>
+        // e: never
+        {
+          console.log('accountsChanged');
+          w?.location?.reload(true);
+        }
+      );
+
+      w?.ethereum?.on('chainChanged', () => {
+        console.log('chainChanged');
+        w?.location?.reload(true);
+      });
     } catch (error) {
-      dispatchSnackbarMessage(errorMessage('Error occurred while connecting to MetaMask Wallet', error));
+      const metamaskError = 'Error occurred while connecting to MetaMask Wallet';
+
+      console.error(metamaskError);
+      dispatchSnackbarMessage(errorMessage(metamaskError, error));
     } finally {
       if (!web3 || !publicAddress || !networkId) {
-        dispatchSnackbarMessage(errorMessage('Could not create Web3 Session!'));
+        const couldNotCreateWeb3Session = 'Could not create Web3 Session!';
+        console.error(couldNotCreateWeb3Session);
+        dispatchSnackbarMessage(errorMessage(couldNotCreateWeb3Session));
       } else {
         const web3Session: Web3Session = {
           web3,
@@ -88,6 +104,8 @@ export const ConnectWithMetamaskButton: React.FC = () => {
           networkId,
           mode: 'metamask'
         };
+
+        console.log(web3Session);
 
         app.setWeb3Session({ ...web3Session });
         navigate('/funding-irys');

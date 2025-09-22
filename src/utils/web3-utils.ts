@@ -12,7 +12,7 @@ export async function getCurrentAddress(web3: Web3) {
   return addr.toLowerCase();
 }
 
-export async function getCurrentNetworkId(web3: Web3): Promise<number> {
+export async function getChainId(web3: Web3): Promise<number> {
   const chainId = await web3.eth.getChainId();
   console.debug('chainId from web3:', chainId);
 
