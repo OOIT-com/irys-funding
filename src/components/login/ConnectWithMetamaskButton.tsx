@@ -63,6 +63,9 @@ export const ConnectWithMetamaskButton: React.FC = () => {
 
       networkId = await getCurrentNetworkId(web3);
 
+      console.log('App detected networkId:', networkId);
+      console.log('MetaMask chainId:', await w.ethereum.request({ method: 'eth_chainId' }));
+
       publicAddress = await getCurrentAddress(web3);
 
       // PUBLIC ADDRESS & PUBLIC KEY
