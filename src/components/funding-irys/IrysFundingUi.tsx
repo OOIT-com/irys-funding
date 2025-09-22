@@ -7,7 +7,6 @@ import { StatusMessageElement } from '../common/StatusMessageElement';
 import TextField from '@mui/material/TextField';
 import { TableRowComp } from '../common/TableRowComp';
 import { Header2 } from '../common/StyledBoxes';
-import { displayAddress } from '../../utils/misc-util';
 import { IrysAccess } from '../../utils/IrysAccess';
 import { useAppContext } from '../AppContextProvider';
 import { IrysData, loadIrysData } from '../../utils/irys-utils';
@@ -26,17 +25,18 @@ export function IrysFundingUi({ irysAccess }: Readonly<{ irysAccess: IrysAccess 
   const refreshIrysData = useCallback(async () => {
     return wrap(`Loading Data for ${arName}...`, async () => {
       setStatusMessage(undefined);
-      const { address, polygonBalance, loadedBalance, balance, statusMessage, pricePerMega, uploadableMegabytes } =
+      const { address, blockchainBalance, loadedBalance, statusMessage, pricePerMega, uploadableMegabytes } =
         await loadIrysData(irysAccess);
       if (statusMessage.status === 'error') {
         setStatusMessage(statusMessage);
       } else {
-        setIrysData({ polygonBalance, address, balance, loadedBalance, pricePerMega, uploadableMegabytes });
+        setIrysData({ blockchainBalance, address, loadedBalance, pricePerMega, uploadableMegabytes });
       }
     });
   }, [wrap, irysAccess]);
 
   const symbol = getNetworkInfo(web3Session?.networkId).currencySymbol;
+  const blockchain = getNetworkInfo(web3Session?.networkId).name;
   const usdPrice = useUsdPrice(symbol);
 
   useEffect(() => {
@@ -51,7 +51,7 @@ export function IrysFundingUi({ irysAccess }: Readonly<{ irysAccess: IrysAccess 
     return <StatusMessageElement statusMessage={infoMessage('No Irys Data available!')} />;
   }
 
-  const fundStatus = fundAmount <= +(irysData.polygonBalance || '0') / 1e18 && fundAmount > 0;
+  const fundStatus = fundAmount <= +(irysData.blockchainBalance || '0') / 1e18 && fundAmount > 0;
 
   const withdrawAmountStatus = withdrawAmount <= +(irysData?.loadedBalance || '0') / 1e18 && withdrawAmount > 0;
 
@@ -83,6 +83,7 @@ export function IrysFundingUi({ irysAccess }: Readonly<{ irysAccess: IrysAccess 
                 key={'fund-button'}
                 size={'small'}
                 disabled={!fundStatus}
+                variant={'contained'}
                 onClick={async () => {
                   if (fundStatus) {
                     const res = await wrap(`Processing funding ${fundAmount}`, async () => {
@@ -106,7 +107,7 @@ export function IrysFundingUi({ irysAccess }: Readonly<{ irysAccess: IrysAccess 
                   }
                 }}
               >
-                Fund {fundAmount}
+                Fund {fundAmount} {`${symbol}`}
               </Button>
             ]}
           />
@@ -129,6 +130,7 @@ export function IrysFundingUi({ irysAccess }: Readonly<{ irysAccess: IrysAccess 
                 key={'withdraw-button'}
                 size={'small'}
                 disabled={!withdrawAmountStatus}
+                variant={'contained'}
                 onClick={async () => {
                   if (withdrawAmountStatus) {
                     const res = await wrap(`Processing withdraw ${withdrawAmount}`, async () => {
@@ -149,34 +151,24 @@ export function IrysFundingUi({ irysAccess }: Readonly<{ irysAccess: IrysAccess 
                   }
                 }}
               >
-                Withdraw {withdrawAmount}
+                Withdraw {withdrawAmount} {`${symbol}`}
               </Button>
             ]}
           />
           <TableRowComp key={'balances'} elements={[<Header2 key={'title'}>Balances</Header2>]} colspan={[3]} />
           <TableRowComp
-            key={'polygone-balance'}
+            key={'blockchain-balance'}
             elements={[
-              <Box key={'title'} sx={{ fontWeight: 'bold' }}>{`Blockchain balance for ${displayAddress(
-                irysAccess.getAddress()
-              )}`}</Box>,
-              displayUsdPrice({ amount: +irysData.polygonBalance / 1e18, symbol, usdPrice })
+              <Box key={'title'} sx={{ fontWeight: 'bold' }}>{`Balance on <${blockchain}>`}</Box>,
+              displayUsdPrice({ amount: +irysData.blockchainBalance / 1e18, symbol, usdPrice })
             ]}
             colspan={[1, 2]}
           />
           <TableRowComp
             key={'loaded-balance'}
             elements={[
-              <Box key={'title'} sx={{ fontWeight: 'bold' }}>{`Irys loaded balance (${irysAccess.getToken()})`}</Box>,
+              <Box key={'title'} sx={{ fontWeight: 'bold' }}>{`Balance on <Irys>`}</Box>,
               displayUsdPrice({ amount: +irysData.loadedBalance / 1e18, symbol, usdPrice })
-            ]}
-            colspan={[1, 2]}
-          />
-          <TableRowComp
-            key={'balance'}
-            elements={[
-              <Box key={'title'} sx={{ fontWeight: 'bold' }}>{`Irys balance (${irysAccess.getToken()})`}</Box>,
-              displayUsdPrice({ amount: +irysData.balance / 1e18, usdPrice, symbol })
             ]}
             colspan={[1, 2]}
           />
@@ -184,9 +176,9 @@ export function IrysFundingUi({ irysAccess }: Readonly<{ irysAccess: IrysAccess 
             key={'upload-allowance-in-mb'}
             elements={[
               <Box key={'title'} sx={{ fontWeight: 'bold' }}>
-                Upload allowance in MB
+                Upload allowance
               </Box>,
-              irysData.uploadableMegabytes
+              <span>{`${irysData.uploadableMegabytes} MB`}</span>
             ]}
             colspan={[1, 2]}
           />
