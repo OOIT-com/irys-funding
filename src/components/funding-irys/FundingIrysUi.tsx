@@ -1,7 +1,7 @@
 import * as React from 'react';
-import { ReactNode, useCallback, useEffect, useState } from 'react';
+import { ReactNode, useEffect, useState } from 'react';
 import { infoMessage, isStatusMessage, StatusMessage } from '../../types';
-import { Box, Paper } from '@mui/material';
+import { Box } from '@mui/material';
 import { StatusMessageElement } from '../common/StatusMessageElement';
 import { IrysFundingUi } from './IrysFundingUi';
 import { IrysAccess } from '../../utils/IrysAccess';
@@ -17,11 +17,6 @@ export function FundingIrysUi() {
 
   const [statusMessage, setStatusMessage] = useState<StatusMessage>();
   const [irysAccess, setIrysAccess] = useState<IrysAccess>();
-
-  const [value, setValue] = React.useState(0);
-  const handleChange = useCallback((_event: React.SyntheticEvent, newValue: number) => {
-    setValue(newValue);
-  }, []);
 
   useEffect(() => {
     const init = async () =>
@@ -51,9 +46,7 @@ export function FundingIrysUi() {
   if (irysAccess) {
     content.push(
       <Box key={'irys-content'} sx={{ width: '100%' }}>
-        <Paper sx={{ margin: '1em 0 1em 0' }}>
-          <IrysFundingUi irysAccess={irysAccess} />
-        </Paper>
+        <IrysFundingUi irysAccess={irysAccess} />
       </Box>
     );
   }
