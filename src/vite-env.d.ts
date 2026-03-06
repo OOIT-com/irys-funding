@@ -1,0 +1,43 @@
+/// <reference types="vite/client" />
+
+interface ImportMetaEnv {
+  readonly VITE_TITLE?: string;
+  readonly VITE_ENV?: string;
+  readonly VITE_ALCHEMY_API_KEY?: string;
+  readonly VITE_COIN_API_KEY?: string;
+  readonly VITE_IRYS_URL?: string;
+  readonly VITE_IRYS_RPC_URL_DEV?: string;
+  readonly VITE_IRYS_GATEWAY?: string;
+  readonly VITE_POLYGONSCAN_API_KEY?: string;
+  readonly VITE_CONTRACT_KEYBLOCK_OWNER?: string;
+  readonly VITE_CONTRACT_KEYBLOCK_POLYGON_MUMBAI?: string;
+  readonly VITE_CONTRACT_KEYBLOCK_POLYGON_MAINNET?: string;
+  readonly VITE_CONTRACT_KEYBLOCK_FANTOM_TESTNET?: string;
+  readonly VITE_CONTRACT_KEYBLOCK_FANTOM_MAINNET?: string;
+  readonly VITE_CONTRACT_KEYBLOCK_ETHEREUM_MAINNET?: string;
+  readonly VITE_CONTRACT_KEYBLOCK_ETHEREUM_GOERLI?: string;
+  readonly VITE_CONTRACT_KEYBLOCK_OPTIMISM_MAINNET?: string;
+  readonly VITE_CONTRACT_PUBLICKEYSTORE_FANTOM_TESTNET?: string;
+  readonly VITE_CONTRACT_PUBLICKEYSTORE_FANTOM_MAINNET?: string;
+  readonly VITE_CONTRACT_PRIVATEMESSAGESTORE_FANTOM_TESTNET?: string;
+  readonly VITE_CONTRACT_PRIVATEMESSAGESTORE_FANTOM_MAINNET?: string;
+  readonly VITE_CONTRACT_UNIQUENAMESTORE_FANTOM_TESTNET?: string;
+  readonly VITE_CONTRACT_UNIQUENAMESTORE_FANTOM_MAINNET?: string;
+  readonly VITE_CONTRACT_REGISTRY_FANTOM_TESTNET?: string;
+  readonly VITE_CONTRACT_ADDRESSBOOK_FANTOM_MAINNET?: string;
+  readonly VITE_CONTRACT_REGISTRY_FANTOM_MAINNET?: string;
+  readonly VITE_UNIVERSAL_NAME_STORE_SONIC_TESTNET?: string;
+  readonly VITE_PUBLIC_KEY_STORE_V2_SONIC_TESTNET?: string;
+  readonly VITE_CONTRACT_REGISTRY_SONIC_TESTNET?: string;
+  readonly VITE_CONTRACT_ADDRESSBOOK_SONIC_TESTNET?: string;
+  readonly VITE_CONTRACT_REGISTRY_POLYGON_MAINNET?: string;
+  readonly VITE_CONTRACT_REGISTRY_AVAX_MAINNET?: string;
+  readonly VITE_UNIVERSAL_NAME_STORE_AVAX_MAINNET?: string;
+  readonly VITE_UNIVERSAL_NAME_STORE_AVAX_FUJI_TESTNET?: string;
+  readonly VITE_CONTRACT_REGISTRY_AVAX_FUJI_TESTNET?: string;
+  readonly VITE_UNIVERSAL_NAME_STORE_FANTOM_TESTNET?: string;
+}
+
+interface ImportMeta {
+  readonly env: ImportMetaEnv;
+}

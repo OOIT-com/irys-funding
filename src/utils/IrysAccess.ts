@@ -6,12 +6,14 @@ import { errorMessage, isStatusMessage, StatusMessage, Web3Session } from '../ty
 import { getNetworkInfo } from '../network-info';
 import { Buffer } from 'buffer';
 import type { Readable } from 'stream';
-import BaseWebIrys from '@irys/web-upload/dist/types/base';
 
 export type Tags = {
   name: string;
   value: string;
 }[];
+
+type BaseWebIrys = Awaited<ReturnType<UploadBuilder['build']>>;
+
 const w = window as any;
 
 export class IrysAccess {
@@ -70,7 +72,7 @@ export class IrysAccess {
   }
 }
 
-const getWebIrys = async (web3Session: Web3Session): Promise<UploadBuilder | StatusMessage> => {
+const getWebIrys = async (web3Session: Web3Session): Promise<BaseWebIrys | StatusMessage> => {
   const { chainId } = web3Session;
 
   const { currencySymbol, isMainnet, name } = getNetworkInfo(chainId);
@@ -92,11 +94,11 @@ const getWebIrys = async (web3Session: Web3Session): Promise<UploadBuilder | Sta
         `Currently only the following tokens are supported: ${Array.from(supportedSymbols).join(', ')}`
       );
   }
-  const rpcUrl: string | undefined = process.env.REACT_APP_IRYS_RPC_URL_DEV ?? '';
+  const rpcUrl: string | undefined = import.meta.env.VITE_IRYS_RPC_URL_DEV ?? '';
   if (!isMainnet && rpcUrl) {
     uploader.withRpc(rpcUrl).devnet();
   }
-  return uploader;
+  return await uploader.build();
 };
 
 export const supportedSymbols = new Set<string>(['ETH', 'AVAX', 'MATIC']);

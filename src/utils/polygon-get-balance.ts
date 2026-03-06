@@ -1,12 +1,11 @@
 import axios from 'axios';
-import * as process from 'process';
 import { errorMessage, StatusMessage } from '../types';
 // tutorial
 export const getBlockchainBalance = async (address: string, isMainnet = true): Promise<StatusMessage | string> => {
   const prefix = isMainnet ? '' : '-testnet';
   const host = `https://api${prefix}.polygonscan.com`;
   console.log(`*** Polygon${prefix} get balance  ***`);
-  const apikey = process.env.REACT_APP_POLYGONSCAN_API_KEY;
+  const apikey = import.meta.env.VITE_POLYGONSCAN_API_KEY;
   const url = `${host}/api?module=account&action=balance&address=${address}&apikey=${apikey}`;
   const res = await axios.get(url, {
     headers: {

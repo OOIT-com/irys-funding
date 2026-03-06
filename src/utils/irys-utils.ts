@@ -1,7 +1,7 @@
 import { IrysAccess } from './IrysAccess';
 import { errorMessage, infoMessage, isStatusMessage, StatusMessage } from '../types';
 
-export const IRYS_GATEWAY = process.env.REACT_APP_IRYS_GATEWAY;
+export const IRYS_GATEWAY = import.meta.env.VITE_IRYS_GATEWAY;
 
 export type IrysData = {
   blockchainBalance: string;

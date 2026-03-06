@@ -15,7 +15,7 @@ export const getPrices = async (symbols: string[]): Promise<AlchemyPrice[] | Sta
   //    --header 'accept: application/json'
   // do a fetch to the Alchemy API
 
-  const alchemyKey = process.env.REACT_APP_ALCHEMY_API_KEY;
+  const alchemyKey = import.meta.env.VITE_ALCHEMY_API_KEY;
   const url = `https://api.g.alchemy.com/prices/v1/${alchemyKey}/tokens/by-symbol?${symbols
     .map((s) => `symbols=${s}`)
     .join('&')}`;
@@ -88,7 +88,7 @@ export const getUsdPriceCoinApi = async (symbol: string): Promise<UsdPrice | Sta
   // -H 'Accept: text/plain' \
   // -H 'X-CoinAPI-Key: 4B836DE4-CAC9-47FC-8833-D6166CAE5458'
   try {
-    const coinApiKey = process.env.REACT_APP_COIN_API_KEY ?? '';
+    const coinApiKey = import.meta.env.VITE_COIN_API_KEY ?? '';
     const url = `https://rest.coinapi.io/v1/exchangerate/${symbol}?filter_asset_id=USD`;
     const headers = {
       accept: 'text/plain',
