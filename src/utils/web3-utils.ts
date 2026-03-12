@@ -13,20 +13,30 @@ export async function getCurrentAddress(web3: Web3) {
 }
 
 export async function getChainId(web3: Web3): Promise<number> {
-  const chainId0 = await web3.eth.getChainId();
-  console.debug('chainId from web3:', chainId0);
-
-  // Ensure we return a proper number
-  const chainId = typeof chainId0 === 'string' ? parseInt(chainId0, 16) : Number(chainId0);
-  console.debug('converted chainId:', chainId);
-
+  // Get chainId directly from MetaMask to avoid caching issues
   const w = window as any;
+
+  if (!w.ethereum) {
+    console.error('❌ MetaMask not available');
+    throw new Error('MetaMask not available');
+  }
+
+  // Always get the LATEST chainId from MetaMask provider
   const metamaskChainId = await w.ethereum.request({ method: 'eth_chainId' });
-  const metamaskNetworkId = parseInt(metamaskChainId, 16);
+  const chainIdDecimal = parseInt(metamaskChainId, 16);
 
-  console.log('App detected chainId:', chainId);
-  console.log('MetaMask chainId (hex):', metamaskChainId);
-  console.log('MetaMask chainId (decimal):', metamaskNetworkId);
+  console.log('🔍 getChainId() called:');
+  console.log('  - MetaMask chainId (hex):', metamaskChainId);
+  console.log('  - MetaMask chainId (decimal):', chainIdDecimal);
 
-  return +(chainId || '-1').toString();
+  // Also check Web3's value for comparison
+  const web3ChainId = await web3.eth.getChainId();
+  console.log('  - Web3 cached chainId:', web3ChainId);
+
+  if (Number(web3ChainId) !== chainIdDecimal) {
+    console.warn('⚠️ Web3 chainId mismatch! MetaMask:', chainIdDecimal, 'Web3:', web3ChainId);
+    console.warn('⚠️ Using MetaMask value as source of truth');
+  }
+
+  return chainIdDecimal;
 }

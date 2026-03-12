@@ -5,6 +5,7 @@ import { AppRouter } from './components/AppRouter';
 import { Snackbar } from './components/common/Snackbar';
 import { AppContextProvider } from './components/AppContextProvider';
 import Loader from './components/common/Loader';
+import { MetaMaskDebugMonitor } from './components/common/MetaMaskDebugMonitor';
 
 export const ColorModeContext = createContext({
   toggleColorMode: () => {}
@@ -83,6 +84,7 @@ export function FundingIrysDApp() {
             <AppRouter />
             <Loader />
             <Snackbar />
+            <MetaMaskDebugMonitor />
           </AppContextProvider>
         </CssBaseline>
       </ThemeProvider>

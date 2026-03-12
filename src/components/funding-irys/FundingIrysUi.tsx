@@ -10,6 +10,7 @@ import { CollapsiblePanel } from '../common/CollapsiblePanel';
 import { Web3NotInitialized } from '../common/Web3NotInitialized';
 import { AppTopTitle } from '../common/AppTopTitle';
 import artworkPng from '../images/funding-irys.png';
+import { NetworkDiagnostics } from '../common/NetworkDiagnostics';
 
 export function FundingIrysUi() {
   const { wrap, web3Session } = useAppContext();
@@ -41,7 +42,10 @@ export function FundingIrysUi() {
     return <Web3NotInitialized />;
   }
 
-  const content: ReactNode[] = [<StatusMessageElement key={'statusMessage'} statusMessage={statusMessage} />];
+  const content: ReactNode[] = [
+    <NetworkDiagnostics key={'network-diagnostics'} />,
+    <StatusMessageElement key={'statusMessage'} statusMessage={statusMessage} />
+  ];
 
   if (irysAccess) {
     content.push(

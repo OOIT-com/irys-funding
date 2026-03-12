@@ -58,8 +58,19 @@ export const ConnectWithMetamaskButton: React.FC = () => {
 
       chainId = await getChainId(web3);
 
-      console.log('App detected chainId:', chainId);
-      console.log('MetaMask chainId:', await w.ethereum.request({ method: 'eth_chainId' }));
+      // Double-check with a fresh request
+      const freshChainId = await w.ethereum.request({ method: 'eth_chainId' });
+      const freshChainIdDecimal = parseInt(freshChainId, 16);
+
+      console.log('🔍 Chain ID verification:');
+      console.log('  - App detected chainId:', chainId);
+      console.log('  - Fresh MetaMask chainId (hex):', freshChainId);
+      console.log('  - Fresh MetaMask chainId (decimal):', freshChainIdDecimal);
+
+      if (chainId !== freshChainIdDecimal) {
+        console.warn('⚠️ Chain ID mismatch detected! Using fresh value:', freshChainIdDecimal);
+        chainId = freshChainIdDecimal;
+      }
 
       publicAddress = await getCurrentAddress(web3);
 
@@ -74,18 +85,8 @@ export const ConnectWithMetamaskButton: React.FC = () => {
         dispatchSnackbarMessage(infoMessage(successfullyConnected));
       }
 
-      w?.ethereum?.on('accountsChanged', () =>
-        // e: never
-        {
-          console.log('accountsChanged');
-          w?.location?.reload(true);
-        }
-      );
-
-      w?.ethereum?.on('chainChanged', () => {
-        console.log('chainChanged');
-        w?.location?.reload(true);
-      });
+      // Note: Event listeners are registered globally in AppContextProvider
+      console.log('ℹ️ MetaMask event listeners are managed globally by AppContextProvider');
     } catch (error) {
       const metamaskError = 'Error occurred while connecting to MetaMask Wallet';
 

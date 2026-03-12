@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MetaMask Event Test</title>
+    <style>
+        body {
+            font-family: monospace;
+            padding: 20px;
+            background: #1a1a1a;
+            color: #00ff00;
+        }
+        .log {
+            background: #000;
+            border: 1px solid #00ff00;
+            padding: 15px;
+            margin: 10px 0;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        .log div {
+            margin: 5px 0;
+        }
+        button {
+            background: #00ff00;
+            color: #000;
+            border: none;
+            padding: 10px 20px;
+            cursor: pointer;
+            font-family: monospace;
+            font-size: 14px;
+            margin: 5px;
+        }
+        button:hover {
+            background: #00cc00;
+        }
+        .info {
+            background: #222;
+            padding: 10px;
+            margin: 10px 0;
+            border-left: 3px solid #00ff00;
+        }
+        .error {
+            color: #ff0000;
+        }
+        .success {
+            color: #00ff00;
+        }
+        .warning {
+            color: #ffaa00;
+        }
+    </style>
+</head>
+<body>
+    <h1>🦊 MetaMask Event Listener Test</h1>
+
+    <div class="info">
+        <strong>Instructions:</strong>
+        <ol>
+            <li>Make sure MetaMask is installed and unlocked</li>
+            <li>Click "Connect MetaMask" button</li>
+            <li>Switch networks in MetaMask</li>
+            <li>Watch the log below for events</li>
+        </ol>
+    </div>
+
+    <div>
+        <button onclick="connectMetaMask()">🔌 Connect MetaMask</button>
+        <button onclick="checkChainId()">📊 Check Current Chain ID</button>
+        <button onclick="clearLog()">🧹 Clear Log</button>
+    </div>
+
+    <div class="log" id="log"></div>
+
+    <script>
+        const logDiv = document.getElementById('log');
+        let eventCount = 0;
+
+        function addLog(message, className = '') {
+            const timestamp = new Date().toLocaleTimeString();
+            const div = document.createElement('div');
+            div.className = className;
+            div.textContent = `[${timestamp}] ${message}`;
+            logDiv.appendChild(div);
+            logDiv.scrollTop = logDiv.scrollHeight;
+        }
+
+        function clearLog() {
+            logDiv.innerHTML = '';
+            eventCount = 0;
+            addLog('Log cleared', 'info');
+        }
+
+        async function checkChainId() {
+            if (!window.ethereum) {
+                addLog('❌ MetaMask not detected!', 'error');
+                return;
+            }
+
+            try {
+                const chainId = await window.ethereum.request({ method: 'eth_chainId' });
+                const decimal = parseInt(chainId, 16);
+                addLog(`📊 Current chainId: ${chainId} (decimal: ${decimal})`, 'success');
+            } catch (error) {
+                addLog(`❌ Error getting chainId: ${error.message}`, 'error');
+            }
+        }
+
+        async function connectMetaMask() {
+            if (!window.ethereum) {
+                addLog('❌ MetaMask not detected! Please install MetaMask.', 'error');
+                return;
+            }
+
+            addLog('🔍 MetaMask detected', 'success');
+            addLog(`  - Provider type: ${typeof window.ethereum}`, 'info');
+            addLog(`  - Has .on(): ${typeof window.ethereum.on === 'function'}`, 'info');
+            addLog(`  - Has .request(): ${typeof window.ethereum.request === 'function'}`, 'info');
+            addLog(`  - Has .removeListener(): ${typeof window.ethereum.removeListener === 'function'}`, 'info');
+
+            try {
+                // Request account access
+                const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+                addLog(`✅ Connected to account: ${accounts[0]}`, 'success');
+
+                // Get current chain ID
+                const chainId = await window.ethereum.request({ method: 'eth_chainId' });
+                const decimal = parseInt(chainId, 16);
+                addLog(`📊 Initial chainId: ${chainId} (decimal: ${decimal})`, 'success');
+
+                // Set up event listeners
+                setupEventListeners();
+
+            } catch (error) {
+                addLog(`❌ Error connecting: ${error.message}`, 'error');
+            }
+        }
+
+        function setupEventListeners() {
+            if (!window.ethereum) return;
+
+            // chainChanged event
+            window.ethereum.on('chainChanged', (chainId) => {
+                eventCount++;
+                const decimal = parseInt(chainId, 16);
+                addLog(`🔄 EVENT #${eventCount}: chainChanged fired!`, 'success');
+                addLog(`  - New chainId (hex): ${chainId}`, 'success');
+                addLog(`  - New chainId (decimal): ${decimal}`, 'success');
+            });
+
+            // accountsChanged event
+            window.ethereum.on('accountsChanged', (accounts) => {
+                eventCount++;
+                addLog(`👤 EVENT #${eventCount}: accountsChanged fired!`, 'success');
+                addLog(`  - New account: ${accounts[0] || 'none'}`, 'success');
+            });
+
+            // connect event
+            window.ethereum.on('connect', (connectInfo) => {
+                eventCount++;
+                addLog(`🔌 EVENT #${eventCount}: connect fired!`, 'success');
+                addLog(`  - chainId: ${connectInfo.chainId}`, 'success');
+            });
+
+            // disconnect event
+            window.ethereum.on('disconnect', (error) => {
+                eventCount++;
+                addLog(`🔌 EVENT #${eventCount}: disconnect fired!`, 'warning');
+                addLog(`  - Error: ${error?.message || 'none'}`, 'warning');
+            });
+
+            addLog('✅ Event listeners registered successfully', 'success');
+            addLog('⏳ Waiting for events... Try switching networks in MetaMask!', 'warning');
+        }
+
+        // Auto-detect MetaMask on load
+        window.addEventListener('load', () => {
+            if (window.ethereum) {
+                addLog('🦊 MetaMask detected on page load', 'success');
+                addLog('👉 Click "Connect MetaMask" to start monitoring', 'info');
+            } else {
+                addLog('❌ MetaMask not detected. Please install MetaMask extension.', 'error');
+            }
+        });
+    </script>
+</body>
+</html>
+

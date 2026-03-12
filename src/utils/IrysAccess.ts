@@ -75,20 +75,32 @@ export class IrysAccess {
 const getWebIrys = async (web3Session: Web3Session): Promise<BaseWebIrys | StatusMessage> => {
   const { chainId } = web3Session;
 
+  console.log('🔍 getWebIrys() initialization:');
+  console.log('  - chainId from web3Session:', chainId);
+
   const { currencySymbol, isMainnet, name } = getNetworkInfo(chainId);
+
+  console.log('  - Detected network:', name);
+  console.log('  - Currency symbol:', currencySymbol);
+  console.log('  - Is mainnet:', isMainnet);
+
   const provider = new ethers.BrowserProvider(w.ethereum);
   let uploader;
   switch (currencySymbol) {
     case 'ETH':
+      console.log('  - Using Ethereum uploader');
       uploader = WebUploader(WebEthereum).withAdapter(EthersV6Adapter(provider));
       break;
     case 'MATIC':
+      console.log('  - Using Matic uploader');
       uploader = WebUploader(WebMatic).withAdapter(EthersV6Adapter(provider));
       break;
     case 'AVAX':
+      console.log('  - Using Avalanche uploader');
       uploader = WebUploader(WebAvalanche).withAdapter(EthersV6Adapter(provider));
       break;
     default:
+      console.error('  - ❌ Unsupported currency:', currencySymbol);
       return errorMessage(
         `Blockchain <${name}> with token ${currencySymbol} not supported`,
         `Currently only the following tokens are supported: ${Array.from(supportedSymbols).join(', ')}`
@@ -96,7 +108,10 @@ const getWebIrys = async (web3Session: Web3Session): Promise<BaseWebIrys | Statu
   }
   const rpcUrl: string | undefined = import.meta.env.VITE_IRYS_RPC_URL_DEV ?? '';
   if (!isMainnet && rpcUrl) {
+    console.log('  - Using devnet with RPC:', rpcUrl);
     uploader.withRpc(rpcUrl).devnet();
+  } else {
+    console.log('  - Using mainnet');
   }
   return await uploader.build();
 };
