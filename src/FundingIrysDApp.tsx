@@ -5,7 +5,11 @@ import { AppRouter } from './components/AppRouter';
 import { Snackbar } from './components/common/Snackbar';
 import { AppContextProvider } from './components/AppContextProvider';
 import Loader from './components/common/Loader';
-import { MetaMaskDebugMonitor } from './components/common/MetaMaskDebugMonitor';
+import { WagmiProvider } from 'wagmi';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { wagmiConfig } from './wagmi-config';
+
+const queryClient = new QueryClient();
 
 export const ColorModeContext = createContext({
   toggleColorMode: () => {}
@@ -80,12 +84,15 @@ export function FundingIrysDApp() {
     <ColorModeContext.Provider value={colorMode}>
       <ThemeProvider theme={theme}>
         <CssBaseline>
-          <AppContextProvider>
-            <AppRouter />
-            <Loader />
-            <Snackbar />
-            <MetaMaskDebugMonitor />
-          </AppContextProvider>
+          <WagmiProvider config={wagmiConfig}>
+            <QueryClientProvider client={queryClient}>
+              <AppContextProvider>
+                <AppRouter />
+                <Loader />
+                <Snackbar />
+              </AppContextProvider>
+            </QueryClientProvider>
+          </WagmiProvider>
         </CssBaseline>
       </ThemeProvider>
     </ColorModeContext.Provider>

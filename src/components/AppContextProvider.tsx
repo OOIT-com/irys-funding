@@ -1,5 +1,7 @@
 import React, { createContext, ReactNode, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { errorMessage, infoMessage, SnackbarMessage, StatusMessage, Web3Session } from '../types';
+import { useAccount, useChainId } from 'wagmi';
+import Web3 from 'web3';
 
 let SnackbarMessageCounter = 0;
 const noop = () => {};
@@ -32,86 +34,45 @@ export const AppContext = createContext<AppContextData | undefined>(undefined);
 
 export function AppContextProvider({ children }: Readonly<{ children: ReactNode }>) {
   const [loading, setLoading] = useState('');
-  const [web3Session, setWeb3Session] = useState<Web3Session>();
+  const [web3Session, setWeb3SessionState] = useState<Web3Session>();
   const [snackbarMessage, setSnackbarMessage] = useState<SnackbarMessage>();
 
-  // Set up MetaMask event listeners on app initialization
+  // wagmi hooks: source of truth for account and chain – update automatically when
+  // the user switches networks or accounts in the MetaMask extension
+  const { address, isConnected, status } = useAccount();
+  const chainId = useChainId();
+  console.debug('chainId', chainId);
+
+  // Rebuild the Web3Session whenever wagmi reports a new address or chainId.
+  // Creating a fresh Web3 instance from window.ethereum ensures every eth call
+  // (balance, gas price, …) targets the currently selected network.
   useEffect(() => {
-    const w = window as any;
-
-    if (!w.ethereum) {
-      console.log('MetaMask not detected on app init');
-      return;
+    console.debug('AppContextProvider :: isConnected', isConnected);
+    console.debug('AppContextProvider :: address', address);
+    console.debug('AppContextProvider :: chainId', chainId);
+    if (isConnected && address && chainId) {
+      console.debug('AppContextProvider :: setWeb3SessionState ok');
+      const web3 = new Web3((window as any).ethereum);
+      setWeb3SessionState({
+        web3,
+        publicAddress: address.toLowerCase(),
+        chainId,
+        mode: 'metamask'
+      });
+    } else if (status !== 'reconnecting' && status !== 'connecting' && !isConnected) {
+      console.debug('AppContextProvider :: setWeb3SessionState undefined');
+      // Only clear the session once wagmi has finished its reconnection attempt
+      setWeb3SessionState(undefined);
     }
+  }, [isConnected, address, chainId, status]);
 
-    console.log('🔍 Initializing MetaMask event listeners...');
-    console.log('  - Provider type:', typeof w.ethereum);
-    console.log('  - Has .on():', typeof w.ethereum.on === 'function');
-    console.log('  - Has .request():', typeof w.ethereum.request === 'function');
-    console.log('  - Has .removeListener():', typeof w.ethereum.removeListener === 'function');
-    console.log('  - Provider isMetaMask:', w.ethereum.isMetaMask);
-
-    const accountsChangedHandler = (accounts: string[]) => {
-      console.log('🔄 [Global] accountsChanged event fired:', accounts);
-      console.log('  - Reloading page...');
-      window.location.reload();
-    };
-
-    const chainChangedHandler = (newChainId: string) => {
-      const timestamp = new Date().toLocaleTimeString();
-      console.log(`🔄 [Global] chainChanged event fired at ${timestamp}!`);
-      console.log('  - new chainId (hex):', newChainId);
-      console.log('  - new chainId (decimal):', parseInt(newChainId, 16));
-      console.log('  - Reloading page in 100ms to ensure state is consistent...');
-
-      // Small delay to ensure MetaMask has fully switched
-      setTimeout(() => {
-        window.location.reload();
-      }, 100);
-    };
-
-    // Register event listeners using EIP-1193 standard
-    try {
-      w.ethereum.on('accountsChanged', accountsChangedHandler);
-      w.ethereum.on('chainChanged', chainChangedHandler);
-      console.log('✅ [Global] MetaMask event listeners registered successfully');
-
-      // Log current state for debugging
-      w.ethereum
-        .request({ method: 'eth_chainId' })
-        .then((chainId: string) => {
-          console.log('📊 Current chainId at registration:', chainId, `(${parseInt(chainId, 16)})`);
-        })
-        .catch((error: any) => {
-          console.error('❌ Error getting initial chainId:', error);
-        });
-
-      // Also log accounts
-      w.ethereum
-        .request({ method: 'eth_accounts' })
-        .then((accounts: string[]) => {
-          console.log('👤 Current accounts at registration:', accounts);
-        })
-        .catch((error: any) => {
-          console.error('❌ Error getting accounts:', error);
-        });
-    } catch (error) {
-      console.error('❌ [Global] Error registering MetaMask listeners:', error);
+  // Kept for backwards compatibility: only publicKeyHolder updates are honoured;
+  // the chain/address/web3 fields always come from wagmi.
+  const setWeb3Session = useCallback((update?: Web3Session) => {
+    if (update?.publicKeyHolder) {
+      setWeb3SessionState((prev) => (prev ? { ...prev, publicKeyHolder: update.publicKeyHolder } : prev));
     }
-
-    // Cleanup function
-    return () => {
-      try {
-        if (w.ethereum.removeListener) {
-          w.ethereum.removeListener('accountsChanged', accountsChangedHandler);
-          w.ethereum.removeListener('chainChanged', chainChangedHandler);
-          console.log('🧹 [Global] MetaMask event listeners cleaned up');
-        }
-      } catch (error) {
-        console.error('❌ [Global] Error removing listeners:', error);
-      }
-    };
-  }, []); // Empty dependency array - run once on mount
+  }, []);
 
   const wrap = useCallback(
     async function w<P = void>(loading: string, p: () => Promise<P>): Promise<P | StatusMessage> {

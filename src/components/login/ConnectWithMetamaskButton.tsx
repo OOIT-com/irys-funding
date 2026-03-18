@@ -1,149 +1,54 @@
-import { useCallback } from 'react';
-import Web3 from 'web3';
-import { Button, Tooltip } from '@mui/material';
-import { errorMessage, infoMessage, PublicKeyHolder, Web3Session } from '../../types';
+import React, { useCallback, useEffect } from 'react';
+import { Button, Stack, Tooltip } from '@mui/material';
+import { useAccount, useConnect, useConnectors } from 'wagmi';
 import { useNavigate } from 'react-router-dom';
-
-import { displayAddress } from '../../utils/misc-util';
-import { getCurrentAddress, getChainId } from '../../utils/web3-utils';
 import { useAppContext } from '../AppContextProvider';
-import { StatusMessageElement } from '../common/StatusMessageElement';
+import { errorMessage, infoMessage } from '../../types';
 import LinkIcon from '@mui/icons-material/Link';
 
 export const ConnectWithMetamaskButton: React.FC = () => {
   const navigate = useNavigate();
-  const app = useAppContext();
-  const { wrap, dispatchSnackbarMessage, web3Session, setWeb3Session } = app;
+  const { dispatchSnackbarMessage, web3Session } = useAppContext();
+  const { connect, isPending, error } = useConnect();
+  const connectors = useConnectors();
+  const { isConnected } = useAccount();
 
-  const handleEthereum = useCallback(async () => {
-    if (!app) {
-      return;
-    }
-
-    const w: any = window;
-    if (!dispatchSnackbarMessage || !setWeb3Session) {
-      console.error('dispatchSnackbarMessage/setWeb3Session not initialized!');
-      return;
-    }
+  // Navigate to the main page once the session is ready
+  useEffect(() => {
     if (web3Session) {
-      const alreadyConnected = 'Already connected!';
-      console.error(alreadyConnected);
-      dispatchSnackbarMessage(infoMessage(alreadyConnected));
+      navigate('/funding-irys');
+    }
+  }, [web3Session, navigate]);
+
+  // Surface connection errors as snackbar messages
+  useEffect(() => {
+    if (error) {
+      dispatchSnackbarMessage(errorMessage('MetaMask connection failed', error.message));
+    }
+  }, [error, dispatchSnackbarMessage]);
+
+  const handleConnect = useCallback(() => {
+    const connector = connectors.find((c) => c.id === 'metaMask') ?? connectors[0];
+    if (!connector) {
+      dispatchSnackbarMessage(infoMessage('No injected wallet found. Please install MetaMask.'));
       return;
     }
-    let web3: Web3 | undefined = undefined;
-    let chainId = 0;
-    let publicAddress: string | undefined = undefined;
-    let publicKeyHolder: PublicKeyHolder | undefined = undefined;
-    try {
-      if (!w.ethereum) {
-        const cannotConnect = 'Cannot connect to Metamask Wallet!';
-        console.error(cannotConnect);
-        dispatchSnackbarMessage(errorMessage(cannotConnect, 'window.ethereum id not initialized!'));
-        return;
-      }
-
-      await w.ethereum.enable();
-
-      const ethereumEnabled = 'Ethereum is enabled!';
-      console.log(ethereumEnabled);
-      dispatchSnackbarMessage(infoMessage(ethereumEnabled));
-
-      // We don't know window.web3 version, so we use our own instance of Web3
-      // with the injected provider given by MetaMask
-      web3 = new Web3(w.ethereum);
-      const webInitialized = 'Web3 initialized!';
-      console.log(webInitialized);
-      dispatchSnackbarMessage(infoMessage(webInitialized));
-
-      chainId = await getChainId(web3);
-
-      // Double-check with a fresh request
-      const freshChainId = await w.ethereum.request({ method: 'eth_chainId' });
-      const freshChainIdDecimal = parseInt(freshChainId, 16);
-
-      console.log('🔍 Chain ID verification:');
-      console.log('  - App detected chainId:', chainId);
-      console.log('  - Fresh MetaMask chainId (hex):', freshChainId);
-      console.log('  - Fresh MetaMask chainId (decimal):', freshChainIdDecimal);
-
-      if (chainId !== freshChainIdDecimal) {
-        console.warn('⚠️ Chain ID mismatch detected! Using fresh value:', freshChainIdDecimal);
-        chainId = freshChainIdDecimal;
-      }
-
-      publicAddress = await getCurrentAddress(web3);
-
-      if (!publicAddress) {
-        const openMetamaskFirst = 'Please open MetaMask first.';
-        console.error(openMetamaskFirst);
-        dispatchSnackbarMessage(errorMessage(openMetamaskFirst, 'Web3 could not detect a public address!'));
-        return;
-      } else {
-        const successfullyConnected = `Address ${displayAddress(publicAddress)} connected`;
-        console.log(successfullyConnected);
-        dispatchSnackbarMessage(infoMessage(successfullyConnected));
-      }
-
-      // Note: Event listeners are registered globally in AppContextProvider
-      console.log('ℹ️ MetaMask event listeners are managed globally by AppContextProvider');
-    } catch (error) {
-      const metamaskError = 'Error occurred while connecting to MetaMask Wallet';
-
-      console.error(metamaskError);
-      dispatchSnackbarMessage(errorMessage(metamaskError, error));
-    } finally {
-      if (!web3 || !publicAddress || !chainId) {
-        const couldNotCreateWeb3Session = 'Could not create Web3 Session!';
-        console.error(couldNotCreateWeb3Session);
-        dispatchSnackbarMessage(errorMessage(couldNotCreateWeb3Session));
-      } else {
-        const web3Session: Web3Session = {
-          web3,
-          publicAddress,
-          publicKeyHolder,
-          chainId,
-          mode: 'metamask'
-        };
-
-        console.log(web3Session);
-
-        app.setWeb3Session({ ...web3Session });
-        navigate('/funding-irys');
-      }
-    }
-  }, [dispatchSnackbarMessage, app, navigate, web3Session, setWeb3Session]);
-
-  const connectMetaMask = useCallback(
-    () =>
-      wrap('Connect with MetaMask', async () => {
-        if (!app) {
-          return;
-        }
-
-        const w: any = window;
-        const errorMethode = (e: Error) => dispatchSnackbarMessage(errorMessage(`Error occurred!`, e));
-        if (w.ethereum) {
-          await handleEthereum().catch(errorMethode);
-        } else {
-          dispatchSnackbarMessage(infoMessage('Try to detect MetaMask...'));
-          w.addEventListener('ethereum#initialized', () => handleEthereum().catch(errorMethode), {
-            once: true
-          });
-        }
-      }),
-    [wrap, app, handleEthereum, dispatchSnackbarMessage]
-  );
-
-  if (!app) {
-    return <StatusMessageElement statusMessage={infoMessage('DApp initializing...')}></StatusMessageElement>;
-  }
+    connect({ connector });
+  }, [connect, connectors, dispatchSnackbarMessage]);
 
   return (
-    <Tooltip title={'Connect with MetaMask or other EVM Plugin Wallet'}>
-      <Button startIcon={<LinkIcon />} variant={'contained'} onClick={connectMetaMask} color={'primary'}>
-        Connect with MetaMask Wallet
-      </Button>
-    </Tooltip>
+    <Stack direction="column">
+      <Tooltip title={'Connect with MetaMask or other EVM Plugin Wallet'}>
+        <Button
+          startIcon={<LinkIcon />}
+          variant={'contained'}
+          onClick={handleConnect}
+          disabled={isPending || isConnected}
+          color={'primary'}
+        >
+          {isPending ? 'Connecting…' : 'Connect with MetaMask Wallet'}
+        </Button>
+      </Tooltip>
+    </Stack>
   );
 };

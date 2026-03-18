@@ -1,13 +1,12 @@
 import { Login } from './login/Login';
 import { Box, Container, Stack } from '@mui/material';
 import { AppHeader } from './landing-page/AppHeader';
-import { createHashRouter, Outlet, RouterProvider, useNavigate } from 'react-router-dom';
+import { createHashRouter, Outlet, RouterProvider } from 'react-router-dom';
 import { AppMenu } from './landing-page/AppMenu';
-import { useEffect } from 'react';
 import { menuColumns, MenuEntry } from './landing-page/menu-defs';
-import { useAppContext } from './AppContextProvider';
 import { ErrorPage } from './login/ErrorPage';
 import Loader from './common/Loader';
+import { Connecting } from './login/Connecting';
 
 const menuEntries: MenuEntry[] = menuColumns.reduce<MenuEntry[]>((acc, col) => [...acc, ...col.entries], []);
 
@@ -32,6 +31,11 @@ const router = () =>
         element: <Login />,
         errorElement: <ErrorPage />
       },
+      {
+        path: '/connecting',
+        element: <Connecting />,
+        errorElement: <ErrorPage />
+      },
 
       {
         path: '/error-page',
@@ -49,15 +53,6 @@ export function AppRouter() {
 }
 
 function AppNavigation() {
-  const { web3Session } = useAppContext();
-  const navigate = useNavigate();
-
-  useEffect(() => {
-    if (!web3Session) {
-      navigate('/login');
-    }
-  }, [web3Session, navigate]);
-
   return (
     <Box
       sx={{

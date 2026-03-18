@@ -7,12 +7,14 @@ import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
 import DialogTitle from '@mui/material/DialogTitle';
 import { NotifyFun } from '../../types';
-import { Paper, Stack, Table, TableBody, TableContainer } from '@mui/material';
+import { Box, Paper, Stack, Table, TableBody, TableContainer } from '@mui/material';
 import { getNetworkInfo } from '../../network-info';
 import Web3 from 'web3';
 import { useAppContext } from '../AppContextProvider';
 import { TableRowInfo } from '../common/TableRowInfo';
 import { displayUsdPrice, useUsdPrice } from '../../prices/get-prices';
+import { ChainSelector } from '../ChainSelector';
+import { NetworkDiagnostics } from '../common/NetworkDiagnostics';
 
 export function Web3InfoPage({ open, done }: Readonly<{ open: boolean; done: NotifyFun }>) {
   const app = useAppContext();
@@ -62,8 +64,13 @@ export function Web3InfoPage({ open, done }: Readonly<{ open: boolean; done: Not
 
   return (
     <Dialog open={open} onClose={done} fullWidth={true} maxWidth={'md'}>
-      <DialogTitle>Info Page for {name}</DialogTitle>
+      <DialogTitle>Web3 Connection Info</DialogTitle>
       <DialogContent>
+        <DialogTitle>Block Chain Selector</DialogTitle>
+        <Box sx={{ paddingTop: '0.6em' }}>
+          <ChainSelector />
+        </Box>
+        <DialogTitle>Current Connection to {name}</DialogTitle>
         <Stack spacing={4}>
           <DialogContentText>{`This page shows information about the currently connected blockchain: ${name}.`}</DialogContentText>
           <TableContainer key="table" component={Paper}>
@@ -110,13 +117,11 @@ export function Web3InfoPage({ open, done }: Readonly<{ open: boolean; done: Not
             </Table>
           </TableContainer>
         </Stack>
+        <NetworkDiagnostics key={'network-diagnostics'} />
       </DialogContent>
       <DialogActions>
         <Button key={'close'} onClick={done}>
           Close
-        </Button>
-        <Button key={'logout'} onClick={() => window.location.reload()}>
-          Logout
         </Button>
       </DialogActions>
     </Dialog>

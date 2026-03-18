@@ -1,54 +1,24 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { Box, Button, Card, CardContent, Typography } from '@mui/material';
 import { useAppContext } from '../AppContextProvider';
+import { useAccount, useChainId } from 'wagmi';
 import { getNetworkInfo } from '../../network-info';
 
 /**
  * Network Diagnostics Component
- * Shows real-time network information to help debug network detection issues
+ * Shows real-time network information from wagmi (the authoritative source).
  */
 export const NetworkDiagnostics: React.FC = () => {
   const { web3Session } = useAppContext();
-  const [metamaskChainId, setMetamaskChainId] = useState<string>('');
-  const [metamaskChainIdDecimal, setMetamaskChainIdDecimal] = useState<number>(0);
-  const [web3ChainId, setWeb3ChainId] = useState<number>(0);
-  const [lastUpdate, setLastUpdate] = useState<string>('');
-
-  const refreshChainInfo = async () => {
-    const w = window as any;
-    if (!w.ethereum) {
-      console.error('MetaMask not available');
-      return;
-    }
-
-    try {
-      // Get chainId from MetaMask
-      const mmChainId = await w.ethereum.request({ method: 'eth_chainId' });
-      const mmChainIdDec = parseInt(mmChainId, 16);
-      setMetamaskChainId(mmChainId);
-      setMetamaskChainIdDecimal(mmChainIdDec);
-
-      // Get chainId from Web3
-      if (web3Session?.web3) {
-        const w3ChainId = await web3Session.web3.eth.getChainId();
-        setWeb3ChainId(Number(w3ChainId));
-      }
-
-      setLastUpdate(new Date().toLocaleTimeString());
-    } catch (error) {
-      console.error('Error refreshing chain info:', error);
-    }
-  };
-
-  useEffect(() => {
-    refreshChainInfo();
-  }, [web3Session]);
+  const { address, status } = useAccount();
+  const wagmiChainId = useChainId();
 
   const sessionChainId = web3Session?.chainId ?? 0;
-  const sessionNetworkInfo = getNetworkInfo(sessionChainId);
-  const metamaskNetworkInfo = getNetworkInfo(metamaskChainIdDecimal);
+  const networkInfo = getNetworkInfo(wagmiChainId);
 
-  const mismatch = sessionChainId !== metamaskChainIdDecimal && metamaskChainIdDecimal !== 0;
+  // After migration, wagmiChainId and sessionChainId should always match.
+  // A mismatch would only appear transiently during the session rebuild.
+  const mismatch = sessionChainId !== wagmiChainId && sessionChainId !== 0;
 
   return (
     <Card sx={{ m: 2, backgroundColor: mismatch ? '#fff3e0' : '#e8f5e9' }}>
@@ -59,33 +29,29 @@ export const NetworkDiagnostics: React.FC = () => {
 
         <Box sx={{ mt: 2 }}>
           <Typography variant="subtitle2">
-            <strong>Session ChainId:</strong> {sessionChainId} ({sessionNetworkInfo.name})
+            <strong>Wallet Status:</strong> {status}
           </Typography>
           <Typography variant="subtitle2">
-            <strong>MetaMask ChainId:</strong> {metamaskChainId} ({metamaskChainIdDecimal}) - {metamaskNetworkInfo.name}
+            <strong>Address:</strong> {address ?? 'Not connected'}
           </Typography>
           <Typography variant="subtitle2">
-            <strong>Web3 ChainId:</strong> {web3ChainId}
+            <strong>Chain ID (wagmi):</strong> {wagmiChainId} — {networkInfo.name}
           </Typography>
-          <Typography variant="caption" color="textSecondary">
-            Last updated: {lastUpdate}
+          <Typography variant="subtitle2">
+            <strong>Chain ID (session):</strong> {sessionChainId || '—'}
           </Typography>
         </Box>
 
         {mismatch && (
           <Box sx={{ mt: 2, p: 1, backgroundColor: '#ff9800', borderRadius: 1 }}>
             <Typography variant="body2" color="white">
-              ⚠️ <strong>MISMATCH DETECTED!</strong> Your app session shows {sessionNetworkInfo.name} but MetaMask is
-              connected to {metamaskNetworkInfo.name}
+              ⚠️ <strong>Transient mismatch</strong> – the session is being rebuilt for chain {wagmiChainId}.
             </Typography>
           </Box>
         )}
 
         <Box sx={{ mt: 2 }}>
-          <Button variant="outlined" size="small" onClick={refreshChainInfo}>
-            Refresh
-          </Button>
-          <Button variant="outlined" size="small" onClick={() => window.location.reload()} sx={{ ml: 1 }}>
+          <Button variant="outlined" size="small" onClick={() => window.location.reload()}>
             Reload Page
           </Button>
         </Box>

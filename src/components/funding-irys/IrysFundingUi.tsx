@@ -12,6 +12,7 @@ import { useAppContext } from '../AppContextProvider';
 import { IrysData, loadIrysData } from '../../utils/irys-utils';
 import { displayUsdPrice, useUsdPrice } from '../../prices/get-prices';
 import { getNetworkInfo } from '../../network-info';
+import { ButtonPanel } from '../common/ButtonPanel';
 
 const arName = 'Irys (Arweave)';
 
@@ -203,9 +204,14 @@ export function IrysFundingUi({ irysAccess }: Readonly<{ irysAccess: IrysAccess 
           />
         </TableBody>
       </Table>
-      <Stack direction={'row'} spacing={1}>
-        <Button onClick={() => refreshIrysData()}>refresh</Button>
-      </Stack>
+      <ButtonPanel mode={'space-between'} sx={{ width: '100%' }}>
+        <Button key={'refresh'} onClick={() => refreshIrysData()}>
+          refresh
+        </Button>
+        {/*<Button key={'logout'} onClick={() => setWeb3Session(undefined)}>*/}
+        {/*  logout*/}
+        {/*</Button>*/}
+      </ButtonPanel>
     </Stack>
   );
 }

@@ -17,9 +17,6 @@ The `chainChanged` event is not firing when switching networks in the new MetaMa
 - Removed duplicate event listener registration (now handled globally)
 - Fixed deprecated `window.location.reload(true)` to `window.location.reload()`
 
-**File: `src/utils/web3-utils.ts`**
-- Changed `getChainId()` to read directly from MetaMask via `eth_chainId` RPC call
-- Avoids Web3.js cached values that don't update when network changes
 
 ### 2. Added Debug Tools
 
